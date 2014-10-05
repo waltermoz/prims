@@ -7,6 +7,8 @@ loader.loadFromXHR('lambert.vert', 'perFragment.frag',
 
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
+  //gl.disable(gl.CULL_FACE);
+
   gl.useProgram(program);
   gl.enable(gl.DEPTH_TEST);
   var uniforms = loader.getUniforms(gl, program);
@@ -51,6 +53,7 @@ function generateGeometry (gl, program, cb) {
   //var geometry = Dodecahedron();
   //var geometry = Icosahedron();
   //var geometry = Torus();
+  var geometry = Menger();
   //var geometry = Sphere();
   //var geometry = Cube();
   //var geometry = Sierpinski();
@@ -59,6 +62,7 @@ function generateGeometry (gl, program, cb) {
   //ObjMesh('../meshes/suzanne.obj', function (geometry) {
   //ObjMesh('../meshes/teapot.obj', function (geometry) {
   //ObjMesh('../meshes/bunny.obj', function (geometry) {
+  /*
   ObjMesh('../meshes/dragon.obj', function (geometry) {
     var end = performance.now();
     console.log('Generating geometry took ' + ((end - start) | 0) + ' ms.');
@@ -70,6 +74,13 @@ function generateGeometry (gl, program, cb) {
     initBuffer(gl, gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(geometry.indices));
     cb(geometry.indices.length);
   });
+  */
+    initBuffer(gl, gl.ARRAY_BUFFER, new Float32Array(geometry.vertices), 3,
+               attributes.aPosition);
+    initBuffer(gl, gl.ARRAY_BUFFER, new Float32Array(geometry.normals), 3,
+               attributes.aNormal);
+    initBuffer(gl, gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(geometry.indices));
+    cb(geometry.indices.length);
 };
 
 function setUniforms (uniforms) {
