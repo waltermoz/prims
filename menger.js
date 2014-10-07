@@ -1,25 +1,25 @@
 "use strict";
 
 function Menger () {
-    var cubeTop = [-1, 1, -1, /**/  1, 1, -1, /**/  1, 1,  1,
-                    1, 1,  1, /**/ -1, 1,  1, /**/ -1, 1, -1];
-    var cubeBot = [-1, -1, -1, /**/ -1, -1,  1, /**/  1, -1,  1,
-                    1, -1,  1, /**/  1, -1, -1, /**/ -1, -1, -1];
-    var cubeLeft = [-1, -1, -1, /**/ -1, -1, 1, /**/ -1, 1, 1,
-                    -1, 1, 1, /**/ -1, 1, -1, /**/ -1, -1, -1];
-    var cubeRight = [1, -1, -1, /**/ 1, 1, -1, /**/ 1, 1, 1,
-                     1, 1, 1, /**/ 1, -1, 1, /**/ 1, -1, -1];
-    var cubeFront = [-1, -1, -1, /**/ 1, -1, -1, /**/ 1, 1, -1,
-                      1,  1, -1, /**/ -1, 1, -1, /**/ -1, -1, -1];
-    var cubeBack = [-1, -1, 1, /**/ -1, 1, 1, /**/ 1, 1, 1,
-                     1,  1, 1, /**/ 1, -1, 1, /**/ -1, -1, 1];
+    var cubeTop =   [-1,  1, -1, /**/  1,  1, -1, /**/  1,  1,  1,
+                      1,  1,  1, /**/ -1,  1,  1, /**/ -1,  1, -1];
+    var cubeBot =   [-1, -1, -1, /**/ -1, -1,  1, /**/  1, -1,  1,
+                      1, -1,  1, /**/  1, -1, -1, /**/ -1, -1, -1];
+    var cubeLeft =  [-1, -1, -1, /**/ -1, -1,  1, /**/ -1,  1,  1,
+                     -1,  1,  1, /**/ -1,  1, -1, /**/ -1, -1, -1];
+    var cubeRight = [ 1, -1, -1, /**/  1,  1, -1, /**/  1,  1,  1,
+                      1,  1,  1, /**/  1, -1,  1, /**/  1, -1, -1];
+    var cubeFront = [-1, -1, -1, /**/  1, -1, -1, /**/  1,  1, -1,
+                      1,  1, -1, /**/ -1,  1, -1, /**/ -1, -1, -1];
+    var cubeBack  = [-1, -1,  1, /**/ -1,  1,  1, /**/  1,  1,  1,
+                      1,  1,  1, /**/  1, -1,  1, /**/ -1, -1,  1];
 
-    var cubeTopNormal = [0,  1,  0];
-    var cubeBotNormal = [0, -1,  0];
-    var cubeLeftNormal = [-1, 0, 0];
-    var cubeRightNormal = [1, 0, 0];
-    var cubeBackNormal = [0, 0, 1];
-    var cubeFrontNormal = [0, 0, -1];
+    var cubeTopNormal  = [0,  1, 0];
+    var cubeBotNormal  = [0, -1, 0];
+    var cubeBackNormal = [0,  0, 1];
+    var cubeLeftNormal =  [-1, 0,  0];
+    var cubeRightNormal = [ 1, 0,  0];
+    var cubeFrontNormal = [ 0, 0, -1];
 
     function cubeAt(x, y, z, d) {
         var maxCoord = Math.pow(3, d);
@@ -29,14 +29,17 @@ function Menger () {
         {
             return false;
         }
-        var mx = Math.floor(x % 3);
-        var my = Math.floor(y % 3);
-        var mz = Math.floor(z % 3);
-        if (mx%2 + my%2 + mz%2 >= 2) { return false; }
-        mx = Math.floor(x / 3);
-        my = Math.floor(y / 3);
-        mz = Math.floor(z / 3);
-        if (mx%2 + my%2 + mz%2 >= 2) { return false; }
+        var maxCoordDiv3 = Math.floor(maxCoord / 3);
+        for (var cd = 1; cd <= d; ++cd) {
+            var tx = Math.floor(x / maxCoordDiv3);
+            var ty = Math.floor(y / maxCoordDiv3);
+            var tz = Math.floor(z / maxCoordDiv3);
+            if (tx%2 + ty%2 + tz%2 >= 2) return false;
+            x = x % maxCoordDiv3;
+            y = y % maxCoordDiv3;
+            z = z % maxCoordDiv3;
+            maxCoordDiv3 = Math.floor(maxCoordDiv3 / 3);
+        }
         return true;
     }
 
@@ -59,12 +62,14 @@ function Menger () {
     }
 
     function makeCube(depth, scale) {
-        // Max of 20^n cubes, but we'll have less than that
         // 0, 0, 0 is bottom left
-        var out_verts = new Array(Math.pow(20*6, depth));
-        var out_norms = new Array(Math.pow(20*6, depth));
+        // TODO - come up with actual formula for how many verts there are
+        var arr_length = Math.floor(108*Math.pow(9, depth));
+        var out_verts = new Array(arr_length);
+        var out_norms = new Array(arr_length);
         var out_idx = 0;
         var maxCoord = Math.pow(3, depth);
+        console.log("verts length: " + out_verts.length);
         scale = scale / maxCoord;
         var coord_scale = scale*2;
         var coord_offset = Math.floor(maxCoord/2);
@@ -116,21 +121,18 @@ function Menger () {
                 }
             }
         }
+        console.log("Final count: " + out_idx);
         out_verts.length = out_idx;
         out_norms.length = out_idx;
         return [out_verts, out_norms];
     }
 
-    var verts_norms = makeCube(2, 1);
+    var verts_norms = makeCube(4, 2);
     var vertices = verts_norms[0];
     var normals = verts_norms[1];
-    var indices = new Array(vertices.length/3);
-    for (var i = 0; i < indices.length; ++i) {
-        indices[i] = i;
-    }
     return {
         vertices: vertices,
-        indices: indices,
+        indices: undefined,
         normals: normals,
     };
 };
