@@ -24,7 +24,8 @@ loader.loadFromXHR('lambert.vert', 'perFragment.frag',
       gl.uniformMatrix4fv(uniforms.uModel, false, modelMatrix)
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
       // since ELEMENT_ARRAY_BUFFER was given a Uint16Array
-      gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_SHORT, 0);
+      //gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_SHORT, 0);
+      gl.drawArrays(gl.TRIANGLES, 0, n);
       requestAnimationFrame(anim);
     })(previous);
   });
@@ -79,8 +80,7 @@ function generateGeometry (gl, program, cb) {
                attributes.aPosition);
     initBuffer(gl, gl.ARRAY_BUFFER, new Float32Array(geometry.normals), 3,
                attributes.aNormal);
-    initBuffer(gl, gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(geometry.indices));
-    cb(geometry.indices.length);
+    cb(geometry.vertices.length/3);
 };
 
 function setUniforms (uniforms) {
