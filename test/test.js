@@ -21,6 +21,8 @@ loader.loadFromXHR('lambert.vert', 'perFragment.frag',
       var dt = t - previous;
       previous = t;
       mat4.rotateY(modelMatrix, modelMatrix, d2r(dt * d));
+      mat4.rotateX(modelMatrix, modelMatrix, d2r(dt * d * 0.5));
+      mat4.rotateZ(modelMatrix, modelMatrix, d2r(dt * d * 0.25));
       gl.uniformMatrix4fv(uniforms.uModel, false, modelMatrix)
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
       // since ELEMENT_ARRAY_BUFFER was given a Uint16Array
@@ -45,6 +47,7 @@ function initBuffer (gl, type, data, elemPerVertex, attribute) {
 function d2r (deg) { return deg * Math.PI / 180.0; };
 function degPerPeriod (period) { return 0.36 / period; };
 
+
 function generateGeometry (gl, program, cb) {
   var attributes = loader.getAttributes(gl, program);
 
@@ -54,7 +57,11 @@ function generateGeometry (gl, program, cb) {
   //var geometry = Dodecahedron();
   //var geometry = Icosahedron();
   //var geometry = Torus();
+
   var geometry = Menger();
+  var end = performance.now();
+  console.log(end - start);
+  console.log(geometry.vertices.length, geometry.normals.length);
   //var geometry = Sphere();
   //var geometry = Cube();
   //var geometry = Sierpinski();
