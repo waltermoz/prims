@@ -61,15 +61,18 @@ function Menger () {
         return to_idx + from.length;
     }
 
+    function calcNumFloats(depth) {
+        if (depth < 0) return 0;
+
+        return (2*Math.pow(20, depth) + 4*Math.pow(8, depth))*18;
+    }
+
     function makeCube(depth, scale) {
-        // 0, 0, 0 is bottom left
-        // TODO - come up with actual formula for how many verts there are
-        var arr_length = Math.floor(108*Math.pow(9, depth));
-        var out_verts = new Array(arr_length);
-        var out_norms = new Array(arr_length);
+        var arr_length = calcNumFloats(depth);
+        var out_verts = new Float32Array(arr_length);
+        var out_norms = new Float32Array(arr_length);
         var out_idx = 0;
         var maxCoord = Math.pow(3, depth);
-        console.log("verts length: " + out_verts.length);
         scale = scale / maxCoord;
         var coord_scale = scale*2;
         var coord_offset = Math.floor(maxCoord/2);
@@ -121,9 +124,6 @@ function Menger () {
                 }
             }
         }
-        console.log("Final count: " + out_idx);
-        out_verts.length = out_idx;
-        out_norms.length = out_idx;
         return [out_verts, out_norms];
     }
 
@@ -132,7 +132,6 @@ function Menger () {
     var normals = verts_norms[1];
     return {
         vertices: vertices,
-        indices: undefined,
         normals: normals,
     };
 };
