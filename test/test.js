@@ -5,28 +5,68 @@ loader.loadFromXHR('lambert.vert', 'perFragment.frag',
     function (errors, program) {
   if (errors.length) return console.error.apply(console, errors);
 
+  var camera = new Camera([0, 0, 6], [0, 1, 0], [0, 0, 0]);
+
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
   //gl.disable(gl.CULL_FACE);
+
+  var moveEvents = new MovementEvents();
+  canvas.tabIndex = 1000;
+  canvas.focus();
+  setupInput(canvas, moveEvents);
 
   gl.useProgram(program);
   gl.enable(gl.DEPTH_TEST);
   var uniforms = loader.getUniforms(gl, program);
   var modelMatrix = setUniforms(uniforms);
   var d = degPerPeriod(10);
+  gl.uniformMatrix4fv(uniforms.uView, false, camera.toMat4());
+
+  const CAM_SPEED = 0.5;
+
+  var accum = 0;
+  const UPDATE_DT = 1.0 / 60.0;
 
   generateGeometry(gl, program, function (n) {
     var previous = performance.now();
     (function anim (t) {
       var dt = t - previous;
       previous = t;
-      mat4.rotateY(modelMatrix, modelMatrix, d2r(dt * d));
-      mat4.rotateX(modelMatrix, modelMatrix, d2r(dt * d * 0.5));
-      mat4.rotateZ(modelMatrix, modelMatrix, d2r(dt * d * 0.25));
-      gl.uniformMatrix4fv(uniforms.uModel, false, modelMatrix)
+      //mat4.rotateY(modelMatrix, modelMatrix, d2r(dt * d));
+      //mat4.rotateX(modelMatrix, modelMatrix, d2r(dt * d * 0.5));
+     // mat4.rotateZ(modelMatrix, modelMatrix, d2r(dt * d * 0.25));
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-      // since ELEMENT_ARRAY_BUFFER was given a Uint16Array
-      //gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_SHORT, 0);
+      gl.uniformMatrix4fv(uniforms.uModel, false, modelMatrix)
+
+      accum += (dt/1000.0);
+      while (accum >= UPDATE_DT) {
+          accum -= UPDATE_DT;
+
+          var CAM_DIST = CAM_SPEED*UPDATE_DT;
+          if (moveEvents.shift_down) {
+              CAM_DIST = 4*CAM_SPEED*UPDATE_DT;
+          }
+
+          // since ELEMENT_ARRAY_BUFFER was given a Uint16Array
+          //gl.drawElements(gl.TRIANGLES, n, gl.UNSIGNED_SHORT, 0);
+          if (moveEvents.mouse_move) {
+              camera.lookRight(moveEvents.mouse_yaw_dx*UPDATE_DT*0.75);
+              camera.lookUp(-moveEvents.mouse_pitch_dy*UPDATE_DT*0.75);
+              moveEvents.mouse_move = false;
+          }
+          if (moveEvents.forward_down)
+              camera.moveForward(CAM_DIST);
+          if (moveEvents.backward_down)
+              camera.moveBackward(CAM_DIST);
+          if (moveEvents.strafe_left_down)
+              camera.strafeLeft(CAM_DIST);
+          if (moveEvents.strafe_right_down)
+              camera.strafeRight(CAM_DIST);
+      }
+
+      gl.uniformMatrix4fv(uniforms.uView, false, camera.toMat4());
+
       gl.drawArrays(gl.TRIANGLES, 0, n);
       requestAnimationFrame(anim);
     })(previous);

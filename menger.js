@@ -127,7 +127,7 @@ function Menger () {
         return [out_verts, out_norms];
     }
 
-    var verts_norms = makeCube(4, 2);
+    var verts_norms = makeCube(4, 4);
     var vertices = verts_norms[0];
     var normals = verts_norms[1];
     return {
